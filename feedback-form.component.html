@@ -1,0 +1,139 @@
+<div class="form">
+  <div class="form__container">
+    <h1 class="form__title">Обратная связь</h1>
+    <form
+      class="form__content"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      *ngIf="state$ | async as state"
+    >
+      <label class="form__label">
+        <span
+          class="form__text"
+          [class.form__text_red]="isInvalid('name')"
+        >Ваше имя</span>
+        <input type="text" class="form__input" formControlName="name">
+        <span *ngTemplateOutlet="validation;context:{errors: form.get('name').errors, name: 'name'}"></span>
+      </label>
+      <div class="form__row">
+        <label class="form__label">
+          <span
+            class="form__text"
+            [class.form__text_red]="isInvalid('phone')"
+          >Телефон</span>
+          <input type="tel"
+                 class="form__input"
+                 formControlName="phone"
+                 mask="(000) 000-00-00"
+                 prefix="+7 "
+                 (keypress)="formKeyPress($event)"
+          >
+          <span *ngTemplateOutlet="validation;context:{errors: form.get('phone').errors, name: 'phone'}"></span>
+        </label>
+        <label class="form__label">
+          <span
+            class="form__text"
+            [class.form__text_red]="isInvalid('email')"
+          >Email</span>
+          <input type="email" class="form__input" formControlName="email">
+          <span *ngTemplateOutlet="validation;context:{errors: form.get('email').errors, name: 'email'}"></span>
+        </label>
+      </div>
+      <label class="form__label">
+        <span
+          class="form__text"
+          [class.form__text_red]="isInvalid('address')"
+        >Ваш адрес</span>
+        <input type="text" class="form__input" formControlName="address">
+        <span *ngTemplateOutlet="validation;context:{errors: form.get('address').errors, name: 'address'}"></span>
+      </label>
+      <div class="form-attachment">
+        <div class="form-attachment__left">
+          <label
+            class="form__text form-attachment__label"
+            [class.form-attachment__label_disabled]="state.uploadFilesCount >= 4"
+          >Прикрепить файл
+            <input
+              type="file"
+              multiple
+              class="form-attachment__input"
+              (change)="fileChange($event.target.files, $event)"
+              [disabled]="state.uploadFilesCount >= 4"
+            >
+          </label>
+          <span class="form__text form__text_sm">До 10 мб, до 4 шт</span>
+        </div>
+        <div
+          class="form-attachment__right"
+          [class.form-attachment__right_disabled]="state.uploadFilesCount === 0"
+        >
+          <div class="form-attachment__data">
+            <span class="form-attachment__item"
+                  *ngIf="state.uploadFilesCount === 0">Вы пока не выбрали ни одного файла</span>
+            <span class="form-attachment__item" *ngFor="let file of state.uploadFiles; let i = index">
+            {{file.name}} ({{file.size | fileSize }}){{ i < state.uploadFilesCount - 1 ? ',' : '' }}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="form-attachment__reset"
+            [class.form-attachment__reset_disabled]="state.uploadFilesCount === 0"
+            (click)="resetAttachment()"
+          >Сбросить
+          </button>
+        </div>
+        <span
+          class="form__validation form-attachment__validation"
+          *ngIf="state.uploadFilesCount === 4"
+        >Должно быть загружено не более 4 файлов</span>
+      </div>
+      <label class="form__label">
+        <span
+          class="form__text"
+          [class.form__text_red]="isInvalid('text')"
+        >Текст обращения</span>
+        <textarea class="form__input form__textarea" formControlName="text"></textarea>
+        <span *ngTemplateOutlet="validation;context:{errors: form.get('text').errors, name: 'text'}"></span>
+      </label>
+      <div class="form__bottom">
+        <div class="form-acceptance">
+          <label class="form-acceptance__label">
+            <input type="checkbox" class="form-acceptance__checkbox" formControlName="privacy">
+            <span class="form-acceptance__container">
+              <span class="form-acceptance__text">Даю согласие на обработку</span>
+              <a class="form-acceptance__text form-acceptance__privacy"
+                 (click)="showPrivacy()">персональных данных</a>
+                <span
+                  *ngTemplateOutlet="validation;context:{errors: form.get('privacy').errors, name: 'privacy'}"></span>
+            </span>
+          </label>
+        </div>
+        <div class="loader-container">
+          <app-loader *ngIf="state.disabled"></app-loader>
+          <app-button type="submit" [disabled]="disabled">Отправить</app-button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<app-form-modal></app-form-modal>
+<ng-template #validation let-name="name" let-errors="errors">
+        <span
+          *ngIf="isInvalid(name)"
+          class="form__subcontainer">
+          <span
+            *ngIf="errors.required"
+            class="form__validation">Поле обязательно</span>
+          <span
+            *ngIf="errors.minlength"
+            class="form__validation">Поле должно содержать не менее {{errors.minlength.requiredLength}}
+            символов</span>
+          <span
+            *ngIf="errors.maxlength"
+            class="form__validation">Поле должно содержать не более {{errors.maxlength.requiredLength}}
+            символов</span>
+          <span
+            *ngIf="errors.email"
+            class="form__validation">Некорректный email</span>
+        </span>
+</ng-template>
